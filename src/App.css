@@ -1,0 +1,12 @@
+body {
+  width: 600px;
+  height: 400px;
+}
+
+.flex {
+   display: flex;
+}
+
+.view-container {
+   padding: 10px;
+}
