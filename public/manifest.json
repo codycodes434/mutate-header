@@ -10,7 +10,8 @@
   "host_permissions": ["http://*/*", "https://*/*"],
   "permissions": [
     "storage",
-    "webRequest"
+    "webRequest",
+    "declarativeNetRequestWithHostAccess"
   ],
   "icons": {
       "16": "logo192.png",

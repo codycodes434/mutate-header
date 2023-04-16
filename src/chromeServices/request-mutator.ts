@@ -1,8 +1,5 @@
 import { UserSettings } from "../user-settings";
-
 export {}
-
-const urls = ["http://*/*", "https://*/*"];
 
 const getSettings = () => {
     return chrome.storage.local.get();
@@ -10,34 +7,60 @@ const getSettings = () => {
 
 let settings: UserSettings;
 
+const allResourceTypes = Object.values(chrome.declarativeNetRequest.ResourceType);
+
+const persistantRuleId = 1000;
+
+
+const applySettings = (settings: UserSettings) => {
+  const requestHeaders = [] as chrome.declarativeNetRequest.ModifyHeaderInfo[];
+
+  if (settings.isActive) {
+    settings.headers.forEach((header) => {
+      requestHeaders.push({
+        header: header.name, 
+        operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+        value: header.value
+      });
+    });
+  }
+
+  if (requestHeaders.length) {
+    chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [{
+        id: persistantRuleId,
+        priority: 1,
+        action: {
+          type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+          requestHeaders
+        },
+        condition: {
+          resourceTypes: allResourceTypes,
+        }
+      }],
+      removeRuleIds: [persistantRuleId]
+    });
+  } else {
+    chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: [persistantRuleId]
+    });
+  }
+};
+
+
 getSettings()
   .then((loadedSettings) => {
     if (loadedSettings?.default) {
         settings = JSON.parse(loadedSettings.default);
+        applySettings(settings);
     }
   })
   .catch((err) => console.log(err));
 
 chrome.runtime.onMessage.addListener((message) => {
-    console.log(message);
+    console.log("update", message);
+    if (message.name === 'settingsUpdate') {
+      applySettings(message.value);
+    }
 });
 
-
-const listener = (details: chrome.webRequest.WebRequestHeadersDetails) => {
-    if (!settings) return;
-
-    if (!settings.isActive) return;
-
-    // If there is no name, we can't really add it either.
-    const activeHeaders = settings.headers.filter((h) => h.isActive && h.name);
-
-    for (const header of activeHeaders)
-    {
-        const { name, value } = header;
-
-        details.requestHeaders?.push({ name, value });
-    }
-};
-
-
-chrome.webRequest.onBeforeSendHeaders.addListener(listener, { urls }, [ 'requestHeaders' ]);
