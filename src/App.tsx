@@ -2,20 +2,8 @@ import { Button, Checkbox, FormControlLabel, IconButton, TextField } from '@mui/
 import { Delete } from '@mui/icons-material';
 import React from 'react';
 import './App.css';
-import { SavedUserSetting, UserSettings } from './user-settings';
-const saveSettings = (settings: UserSettings) => {
-  const settingsUpdate = { "default": JSON.stringify(settings) };
-
-  return chrome.storage.local.set(settingsUpdate)
-    .then(() => {
-      return chrome.runtime.sendMessage({ name: "settingsUpdate", value: settings });
-    })
-    .catch((err) => console.log(err));
-};
-
-const getSettings = () : Promise<SavedUserSetting> => {
-  return chrome.storage.local.get();
-};
+import { UserSettings } from './user-settings';
+import { getSettings, saveSettings } from './user-settings-helpers';
 
 const getDefaultSettings = () : UserSettings => {
   return { 
