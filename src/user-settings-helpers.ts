@@ -5,7 +5,7 @@ const allResourceTypes = Object.values(chrome.declarativeNetRequest.ResourceType
 const persistantRuleId = 1000;
 
 const mapHeaderSettingToModifyHeaderInfo =  (header: Header) : chrome.declarativeNetRequest.ModifyHeaderInfo => ({
-  header: header.name, 
+  header: header.name.trim(), 
   operation: chrome.declarativeNetRequest.HeaderOperation.SET,
   value: header.value
 });
